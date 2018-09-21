@@ -12,20 +12,20 @@ public class Sketchpad : Application {
 	protected override void OnStartup(StartupEventArgs e) {
 		base.OnStartup(e);
 
-		Window root = new Window();
-		InkCanvas inkCanvas1 = new InkCanvas();
+		root = new Window();
+		canvas = new InkCanvas();
 
 		root.Title = "Skortchpard";
 
 		root.ResizeMode = ResizeMode.CanResizeWithGrip;
-		inkCanvas1.Background = Brushes.DarkSlateBlue;
-		inkCanvas1.DefaultDrawingAttributes.Color = Colors.SpringGreen;
-		inkCanvas1.DefaultDrawingAttributes.Height = 10;
-		inkCanvas1.DefaultDrawingAttributes.Width = 10;
-		inkCanvas1.EditingModeInverted = InkCanvasEditingMode.EraseByPoint;
-		inkCanvas1.EditingMode = InkCanvasEditingMode.Ink;
+		canvas.Background = Brushes.DarkSlateBlue;
+		canvas.DefaultDrawingAttributes.Color = Colors.SpringGreen;
+		canvas.DefaultDrawingAttributes.Height = 10;
+		canvas.DefaultDrawingAttributes.Width = 10;
+		canvas.EditingModeInverted = InkCanvasEditingMode.EraseByPoint;
+		canvas.EditingMode = InkCanvasEditingMode.Ink;
 
-		root.Content = inkCanvas1;
+		root.Content = canvas;
 		root.Show();
 	}
 
