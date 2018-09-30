@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Ink;
 using System.IO;
 using System.Xml.Serialization;
+using System.Windows.Media.Imaging;
 
 namespace Sketchpad {
 
@@ -27,10 +28,17 @@ public class TheSketchpad : Application {
 		var fd = new Microsoft.Win32.SaveFileDialog();
 		fd.FileName = "Sketch";
 		fd.DefaultExt = ".jpg";
-		fd.Filter = "Images (.jpg) | *.jpg,*.jpeg";
+		fd.Filter = "Images (.jpg) | *.jpg";
 		var result = fd.ShowDialog();
 		if (result == true){
 			Console.WriteLine("Gonna save to {0}", fd.FileName);
+			var rtb = new RenderTargetBitmap((int)this.canvas.ActualWidth, (int)this.canvas.ActualHeight, 96d, 96d, PixelFormats.Default);
+			rtb.Render(this.canvas);
+			using(var fs = File.Open(fd.FileName, FileMode.Create)){
+				var encoder = new JpegBitmapEncoder();
+				encoder.Frames.Add(BitmapFrame.Create(rtb));
+				encoder.Save(fs);
+			}
 		}
 		else {
 			Console.WriteLine("Save was aborted");
