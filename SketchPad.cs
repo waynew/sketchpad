@@ -6,6 +6,8 @@ using System.Windows.Ink;
 using System.IO;
 using System.Xml.Serialization;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using System.Reflection;
 
 namespace Sketchpad {
 
@@ -23,36 +25,71 @@ public class TheSketchpad : Application {
 
 	Window root;
 	InkCanvas canvas;
+	Grid grid;
+	public double dpiX = 96d;
+	public double dpiY = 96d;
+	string save_filename = null;
 
-	public void saveCanvas(object sender, RoutedEventArgs e){
+	public string getSaveFilename(){
 		var fd = new Microsoft.Win32.SaveFileDialog();
 		fd.FileName = "Sketch";
 		fd.DefaultExt = ".jpg";
 		fd.Filter = "Images (.jpg) | *.jpg";
 		var result = fd.ShowDialog();
 		if (result == true){
-			Console.WriteLine("Gonna save to {0}", fd.FileName);
-			var rtb = new RenderTargetBitmap((int)this.canvas.ActualWidth, (int)this.canvas.ActualHeight, 96d, 96d, PixelFormats.Default);
-			rtb.Render(this.canvas);
-			using(var fs = File.Open(fd.FileName, FileMode.Create)){
-				var encoder = new JpegBitmapEncoder();
-				encoder.Frames.Add(BitmapFrame.Create(rtb));
-				encoder.Save(fs);
-			}
+			return fd.FileName;
 		}
-		else {
-			Console.WriteLine("Save was aborted");
+		else{
+			return null;
+		}
+	}
+
+	public void saveCanvas(object sender, RoutedEventArgs e){
+		this.save_filename = this.save_filename ?? this.getSaveFilename();
+		
+		if (save_filename != null){
+			var cantwo = new InkCanvas();
+			cantwo.Strokes.Clear();
+			cantwo.Strokes.Add(this.canvas.Strokes);
+			cantwo.Background = this.canvas.Background;
+			var size = new Size(this.canvas.ActualWidth, this.canvas.ActualHeight);
+			cantwo.Height = size.Height;
+			cantwo.Width = size.Width;
+			cantwo.Measure(size);
+			cantwo.Arrange(new Rect(size));
+			var transform = this.canvas.LayoutTransform;
+			var rtb = new RenderTargetBitmap((int)this.canvas.ActualWidth, (int)this.canvas.ActualHeight, dpiX, dpiY, PixelFormats.Default);
+			rtb.Render(cantwo);
+			try {
+				using(var fs = File.Open(this.save_filename, FileMode.Create)){
+					var encoder = new JpegBitmapEncoder();
+					encoder.Frames.Add(BitmapFrame.Create(rtb));
+					encoder.Save(fs);
+				}
+			}
+			catch(IOException){
+				MessageBox.Show("Failed to save image", "ERROR: Save Failed");
+			}
+			// Restore transformation if there was one.
+			this.canvas.LayoutTransform = transform;
 		}
 	}
 
 	protected override void OnStartup(StartupEventArgs e) {
 		base.OnStartup(e);
 
+		var dpiXProperty = typeof(SystemParameters).GetProperty("DpiX", BindingFlags.NonPublic | BindingFlags.Static);
+		var dpiYProperty = typeof(SystemParameters).GetProperty("Dpi", BindingFlags.NonPublic | BindingFlags.Static);
+		
+		//this.dpiX = (int)dpiXProperty.GetValue(null, null);
+		//this.dpiY = (int)dpiYProperty.GetValue(null, null);
+
 		string root_appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 		string app_data_folder = Path.Combine(root_appdata, "sketchpad");
 		string settings_path = Path.Combine(app_data_folder, "settings.txt");
 		var settings = new Settings();
 		var settings_serializer = new XmlSerializer(settings.GetType());
+
 
 		if (File.Exists(settings_path)){
 			using(var fs = File.OpenRead(settings_path)){
@@ -71,7 +108,7 @@ public class TheSketchpad : Application {
 
 
 		root = new Window();
-		var grid = new Grid();
+		grid = new Grid();
 		var col_1 = new ColumnDefinition();
 		var col_2 = new ColumnDefinition();
 		var row_1 = new RowDefinition();
