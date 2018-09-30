@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<settingsfile xmlns="http://schemas.microsoft.com/visualstudio/2004/01/settings" currentprofile="(default)" generatedclassnamespace="simplesketch.properties" generatedclassname="settings">
+  <profiles />
+  <settings>
+    <setting name="setting" type="system.string" scope="user">
+      <value profile="(default)">blerp</value>
+    </setting>
+  </settings>
+</settingsfile>

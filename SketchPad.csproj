@@ -21,6 +21,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SketchPad.cs" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
   </ItemGroup>
   <Target Name="Build" Inputs="@(Compile)" Outputs="$(OutputPath)$(AssemblyName).exe">
     <MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
